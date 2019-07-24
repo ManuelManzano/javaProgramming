@@ -1,0 +1,325 @@
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
+
+
+public class Lottery {
+	private final int[] WINNING_NUMBERS = {12, 13, 6, 8, 25, 9};
+	private final int[] FOURTH = {12, 13, 17, 8, 25, 9};
+	private final int[] FIFTH = {12, 13, 17, 8, 25, 19};
+	private final int[] SIXTH = {12, 13, 6, 8, 25, 9};
+	private int[][] lotteryNumbers = new int[6][6];
+
+	private int numWinningPicks;
+	private boolean powerBall;
+	
+	private double FED_TAX_RATE = 25.0;
+
+	private final String[] US_STATES = {"1.Alabama", "2.Alaska", "3.Arizona", "4.Arkansas", "5.California", "6.Colorado", "7.Connecticut", "8.Delaware",
+			"9.Florida", "10.Georgia", "11.Hawaii", "12.Idaho", "13.Illinois", "14.Indiana", "15.Iowa",
+			"16.Kansas", "17.Kentucky", "18.Louisiana", "19.Maine", "20.Maryland", "21.Massachusets", "22.Michigan", "23.Minnesota",
+			"24.Mississippi", "25.Missouri", "26.Montana", "27.Nebraska", "28.Nevada", "29.NewHampshire", "30.New Jersey", "31.New Mexico",
+			"32.New York", "33.N. Carolina", "34.North Dakota", "35.Ohio", "36.Oklahoma", "37.Oregon", "38.Pennsylvania", "39.Rhode Island",
+			"40.South Carolina", "41.South Dakota", "42.Tennessee", "43.Texas", "44.Utah   ", "45.Vermont", "46.Virginia", "47.Washington",
+			"48.W. Virginia", "49.Wisconsin", "50.Wyoming" };
+
+	int ticket = 0;
+	int state = 0;
+	boolean lumpSum;
+
+	public Lottery(){
+		loadTickets();
+		saveTickets();
+
+		run();
+	}
+
+	private void run(){
+		Scanner s = new Scanner(System.in);
+		boolean validInput = false;
+
+		System.out.print("Please choose a ticket:");
+		System.out.println();
+		System.out.print("\r\n" + "Ticket #1\tTicket #2\tTicket #3\r\n");
+		System.out.println();
+		System.out.print("Ticket #4\tTicket #5\tTicket #6\r\n\r\n");
+		while(!validInput){
+			try{
+				ticket = Integer.parseInt(s.nextLine());
+
+				if(ticket <= 0 || ticket > lotteryNumbers.length){
+					System.out.print("Invalid ticket choice.\r\nPlease pick a ticket:\r\n" + "Ticket #1\tTicket #2\tTicket #3\r\n");
+					System.out.print("Ticket #4\tTicket #5\tTicket #6\r\n\r\n");
+					continue;
+				}
+				validInput = true;
+			}catch(Exception e){
+				System.out.print("Invalid ticket choice.\r\nPlease pick a ticket:\r\n" + "Ticket #1\tTicket #2\tTicket #3\r\n");
+				System.out.print("Ticket #4\tTicket #5\tTicket #6\r\n\r\n");
+			}
+		}
+
+		validInput = false;
+		System.out.println("Pick a payout\r\n1.Lump Sum\t2.30 year payout");
+		while(!validInput){
+			try{
+				int iLump = Integer.parseInt(s.nextLine());
+				if(iLump < 1 || iLump > 2){
+					System.out.println("Invalid payout\r\nPick a payout\r\n1.Lump Sum\t2.30 year payout");
+					continue;
+				}
+				if(iLump == 1){
+					lumpSum = true;
+				}else{
+					lumpSum = false;
+				}
+				validInput = true;
+			}catch(Exception exc){
+				System.out.println("Invalid payout\r\nPick a payout\r\n1.Lump Sum\t2.30 year payout");
+			}
+		}
+		
+		System.out.println("Pick your state");
+		printStates();
+		validInput = false;
+		while(!validInput){
+			try{
+				state = Integer.parseInt(s.nextLine());
+				if(state <= 0 || state > US_STATES.length){
+					System.out.println("Invalid state.\r\nPick your state");
+					printStates();
+					continue;
+				}
+				validInput = true;
+			}catch(Exception ex){
+				System.out.println("Invalid state.\r\nPick your state");
+				printStates();
+			}
+		}
+
+		printWinningInfo();
+	}
+
+	private void printWinningInfo(){
+		System.out.println();System.out.println();
+		System.out.println("Lump Sum - Option");
+		System.out.println("=================");
+		
+		double payout = getTicketPayout();
+		double stateTax = getTaxRateFromState(state);
+		
+		DecimalFormat df = new DecimalFormat("###,###,###.00");
+		double lumpSum = 81400000 - (81400000.00 * stateTax/100) - (81400000 * FED_TAX_RATE/100);
+		System.out.println("Total\t\t" + "$" + df.format(81400000.00));
+		System.out.println("After tax\t" + "$" + df.format(lumpSum));
+		
+		System.out.println();System.out.println();System.out.println();
+		System.out.println("30 year payout - Option");
+		System.out.println("=======================");
+		System.out.println("Yearly Payout\t" + "$" + df.format(131000000/30));
+		double yearly = 131000000/30 - (131000000/30*stateTax/100) - (131000000/30*FED_TAX_RATE/100);
+		System.out.println("After Tax\t" + "$" + df.format(yearly));
+		
+		System.out.println();System.out.println();System.out.println();
+		System.out.println("Your Winnings");
+		System.out.println("=============");
+		System.out.println("Correct Numbers Picked\t" + numWinningPicks);
+		System.out.println("Powerball Picked\t" + powerBall);
+		System.out.println("Winnings\t\t" + "$" + df.format(payout - (payout*stateTax/100) - (payout*FED_TAX_RATE/100)));
+		
+		
+	}
+	
+	private double getTicketPayout(){
+		int[] currentTicket = lotteryNumbers[ticket];
+		for(int i = 0; i < WINNING_NUMBERS.length - 1; i++){
+			for(int j = 0; j < WINNING_NUMBERS.length; j++){
+				if(WINNING_NUMBERS[i] == currentTicket[j])
+					numWinningPicks++;
+			}
+		}
+		if(WINNING_NUMBERS[5] == lotteryNumbers[ticket][5]){
+			powerBall = true;
+		}
+		
+		if(numWinningPicks == 5 && powerBall){
+			return 131000000.00;
+		}else if(numWinningPicks == 5){
+			return 1000000.00;
+		}else if(numWinningPicks == 4 && powerBall){
+			return 10000.00;
+		}else if(numWinningPicks == 4){
+			return 100.00;
+		}else if(numWinningPicks == 3 && powerBall){
+			return 100.00;
+		}else if(numWinningPicks == 3){
+			return 7.00;
+		}else if(numWinningPicks == 2 && powerBall){
+			return 7.00;
+		}else if(numWinningPicks == 1 && powerBall){
+			return 4.00;
+		}else if(powerBall){
+			return 4.00;
+		}else{
+			return 0.00;
+		}
+	}
+
+	private double getTaxRateFromState(int stateCode){
+		switch(stateCode){
+		case 1:
+		case 2:
+			return 0.0;
+		case 3:
+			return 5.0;
+		case 4:
+			return 7.0;
+		case 5:
+			return 0.0;
+		case 6:
+			return 4.0;
+		case 7:
+			return 6.7;
+		case 8:
+		case 9:
+			return 0.0;
+		case 10:
+			return 6.0;
+		case 11:
+			return 0.0;
+		case 12:
+			return 7.8;
+		case 13:
+			return 5.0;
+		case 14:
+			return 3.4;
+		case 15:
+		case 16:
+			return 5.0;
+		case 17:
+			return 6.0;
+		case 18:
+		case 19:
+			return 5.0;
+		case 20:
+			return 8.5;
+		case 21:
+			return 5.0;
+		case 22:
+			return 4.35;
+		case 23:
+			return 7.25;
+		case 24:
+			return 0.0;
+		case 25:
+			return 4.0;
+		case 26:
+			return 6.9;
+		case 27:
+		case 28:
+		case 29:
+			return 0.0;
+		case 30:
+			return 10.8;
+		case 31:
+			return 6.0;
+		case 32:
+			return 8.97;
+		case 33:
+			return 7.0;
+		case 34:
+			return 5.54;
+		case 35:
+			return 6.0;
+		case 36:
+			return 4.0;
+		case 37:
+			return 8.0;
+		case 38:
+			return 0.0;
+		case 39:
+		case 40:
+			return 7.0;
+		case 41:
+		case 42:
+		case 43:
+			return 0.0;
+		case 44:
+			return 0.0;
+		case 45:
+			return 6.0;
+		case 46:
+			return 4.0;
+		case 47:
+			return 8.5;
+		case 48:
+			return 6.5;
+		case 49:
+			return 7.75;
+		case 50:
+		default:
+			return 0.0;
+		}
+	}
+
+	private void printStates(){
+		for(int i = 0; i < US_STATES.length; i++){
+			if(i % 5 == 0){
+				System.out.println();
+			}
+			System.out.print(US_STATES[i] + "\t");
+		}
+		System.out.println();
+	}
+
+	private void saveTickets(){
+		PrintWriter out = null;
+		try{
+			out = new PrintWriter("LotteryNumbers.txt");
+			out.println("Lottery Numbers");
+			out.println("");
+			for(int i = 0; i < lotteryNumbers.length; i++){
+				for(int j = 0; j < lotteryNumbers[i].length; j++){
+					out.print(lotteryNumbers[i][j] + " ");
+				}
+				out.println("");
+			}
+		}catch(Exception e){
+			System.out.println("Error writing lottery numbers to file");
+		}finally{
+			out.close();
+		}
+	}
+
+	private void loadTickets(){
+		Random rand = new Random();
+		for(int i = 0; i < lotteryNumbers.length - 3; i++){
+			List<Integer> usedNumbers = new ArrayList<Integer>();
+			for(int j = 0; j < lotteryNumbers[i].length; j++){
+				if(j == 5){
+					lotteryNumbers[i][j] = rand.nextInt(35) + 1;
+				}else{
+					boolean used = true;
+					int number = 0;
+					while(used){
+						number = rand.nextInt(59) + 1;
+						if(!usedNumbers.contains(number))
+							used = false;
+					}
+					lotteryNumbers[i][j] = number;
+					usedNumbers.add(number);
+				}
+			}
+		}
+		lotteryNumbers[3] = FOURTH;
+		lotteryNumbers[4] = FIFTH;
+		lotteryNumbers[5] = SIXTH;
+	}
+
+	public static void main(String[] args){
+		new Lottery();
+	}
+}

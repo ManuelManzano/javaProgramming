@@ -13,7 +13,7 @@ public class Exercise2 {
             System.out.println("Wrong parameters");
         } else {
             for(int i = 1; i <= rows; i++) {
-                for(int j = 1; j<=rows; j++) {
+                for(int j = 1; j<=col; j++) {
                     System.out.print("ALFA ");
                 }
                 System.out.println();

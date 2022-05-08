@@ -46,7 +46,8 @@ public class Exercise {
 
 /* PRINTS THE FOLLOWING PATTERNS
 
-1 *  *  *  *  *  *  *  * 
+
+  1 *  *  *  *  *  *  *  * 
   1  2 *  *  *  *  *  *  * 
   1  2  3 *  *  *  *  *  * 
   1  2  3  4 *  *  *  *  * 
@@ -84,7 +85,9 @@ public class Exercise {
 7  4  17  14  27  24  
 8  3  18  13  28  23  
 9  2  19  12  29  22  
-10  1  20  11  30  21
+10  1  20  11  30  21  
+
+
 
 
 

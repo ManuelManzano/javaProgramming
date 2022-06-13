@@ -1,0 +1,38 @@
+import java.util.Scanner;
+
+public class Lottery {
+    public static void main(String[] args) {
+
+        // Generate a random lottery number
+        int lottery = (int) (Math.random() * 100);
+
+        // Prompt user to enter a guess
+        Scanner input = new Scanner(System.in);
+        System.out.println("Please enter your lucky number: ");
+        int guess = input.nextInt();
+
+        // Get digits from the lottery
+        int lotteryDigit1 = lottery / 10;
+        int lotteryDigit2 = lottery % 10;
+
+        // Get digits from guess
+        int guessDigit1 = guess / 10;
+        int guessDigit2 = guess % 10;
+
+        System.out.println("The lottery number is: " + lottery);
+
+        // Check the guess
+        if (guess == lottery)
+            System.out.println("You WIN ! Exact match ! You win 1 BTC!");
+        else if (guessDigit2 == lotteryDigit1 && guessDigit1 == lotteryDigit2)
+            System.out.println("Matched all digits! You win 1/2 BTC!");
+        else if (guessDigit1 == lotteryDigit1
+                || guessDigit1 == lotteryDigit2
+                || guessDigit2 == lotteryDigit1
+                || guessDigit2 == lotteryDigit2)
+            System.out.println("Matched one digit! You win 1/4 BTC");
+        else
+            System.out.println("Sorry! no Match!");
+
+    }
+}
